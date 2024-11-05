@@ -52,11 +52,11 @@ package.json
 
 .tx
 .venv
-addons
-debian
-doc
-odoo
-setup
+/addons/
+/debian/
+/doc/
+/odoo/
+/setup/
 CONTRIBUTING.md
 
 COPYRIGHT
