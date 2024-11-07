@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="portal_my_home" name="Projects / Tasks" customize_show="True" inherit_id="portal.portal_my_home"
+              priority="70">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="after">
+            <t t-set="portal_service_category_enable" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[@id='portal_service_category']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'crm_portal/static/img/crm.svg'"/>
+                <t t-set="title">CRM</t>
+                <t t-set="url" t-value="'/my/crm'"/>
+                <t t-set="text">Follow the evolution of your projects</t>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template inherit_id="portal.portal_breadcrumbs" id="crm_portal_breadcrumbs">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'crm_list_view'" class="breadcrumb-item">CRM</li>
+        </xpath>
+    </template>
+
+    <template id="my_crm_portal">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">CRM</t>
+            </t>
+            <t t-if="not crm_datas">
+                <p class="alert alert-warning">There are currently no CRM.</p>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-left">Opportunity</th>
+                        <th class="text-left">Contact Name</th>
+                        <th class="text-left">Email</th>
+                        <th class="text-left">Salesperson</th>
+                        <th class="text-left">Expected Revenue</th>
+                        <th class="text-left">Stage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="crm_datas" t-as="data">
+                        <tr>
+                            <td class="text-left">
+                                <a t-attf-href="/my/crm/#{data.id}">
+                                    <t t-out="data.name"/>
+                                </a>
+
+                            </td>
+                            <td class="text-left">
+                                <t t-out="data.contact_name"/>
+                            </td>
+                            <td class="text-left">
+                                <t t-out="data.email_from"/>
+                            </td>
+                            <td class="text-left">
+                                <t t-if="data.user_id.image_1920">
+                                    <img t-attf-src="data:image/png;base64,{{data.user_id.image_1920}}" alt="avatar"
+                                         class="rounded-circle img-fluid"
+                                         style="width:30px;height:30px;"/>
+                                </t>
+                                <t t-else="">
+                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                                         alt="avatar"
+                                         class="rounded-circle img-fluid" style="width:30px;height:30px;"/>
+                                </t>
+                                <t t-out="data.user_id.name"/>
+                            </td>
+                            <td class="text-left">
+                                <t t-out="data.expected_revenue"/>
+                            </td>
+                            <td class="text-left">
+                                <t t-out="data.stage_id.name"/>
+                            </td>
+                        </tr>
+
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+</odoo>
