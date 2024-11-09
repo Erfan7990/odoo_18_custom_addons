@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <template id="portal_my_home" name="Projects / Tasks" customize_show="True" inherit_id="portal.portal_my_home"
+    <template id="portal_my_crm" name="Lead / CRM" customize_show="True" inherit_id="portal.portal_my_home"
               priority="70">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="after">
             <t t-set="portal_service_category_enable" t-value="True"/>
@@ -19,6 +19,10 @@
     <template inherit_id="portal.portal_breadcrumbs" id="crm_portal_breadcrumbs">
         <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
             <li t-if="page_name == 'crm_list_view'" class="breadcrumb-item">CRM</li>
+            <li t-if="page_name == 'crm_form_view'" class="breadcrumb-item">
+                <a t-attf-href="/my/crm">CRM</a>
+                <span t-esc="' / ' + crm_id.name"/>
+            </li>
         </xpath>
     </template>
 
@@ -83,5 +87,173 @@
                 </tbody>
             </t>
         </t>
+    </template>
+
+    <template id="my_crm_portal_form_view" inherit_id="portal.portal_sidebar">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-if="page_name == 'crm_form_view'">
+                <section>
+                    <div class="container">
+                        <div class="col">
+                            <div class="row-3 d-flex justify-content-between align-items-center px-2 py-1"
+                                 style="border-bottom: 1px solid #cecece; background-color: #f9f9f9;">
+                                <div>
+                                    <h3>
+                                        <t t-out="crm_id.name"/>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <t t-set="stars" t-value="int(crm_id.priority) if crm_id.priority else 0"/>
+                                    <t t-foreach="range(stars)" t-as="star">
+                                        <i class="fa fa-star" style="color: #FFD700;"></i> <!-- Filled star -->
+                                    </t>
+                                    <t t-foreach="range(3 - stars)" t-as="star">
+                                        <i class="fa fa-star-o" style="color: #FFD700;"></i> <!-- Empty star -->
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="row-9 pt-3 d-flex justify-content-between">
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Customer</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.partner_name" t-out="crm_id.partner_name"/>
+                                            <p class="p-0 m-0 d-flex align-items-center text-left" t-if="crm_id.phone">
+                                                <i class="fa fa-phone" style="margin-right: 5px;"/>
+                                                <t t-out="crm_id.phone"/>
+                                            </p>
+                                            <p class="p-0 m-0 d-flex align-items-center text-left" t-if="crm_id.mobile">
+                                                <i class="fa fa-mobile" style="margin-right: 10px;"/>
+                                                <t t-out="crm_id.mobile"/>
+                                            </p>
+                                            <p class="p-0 m-0 d-flex align-items-center text-left"
+                                               t-if="crm_id.email_from">
+                                                <i class="fa fa-envelope" style="margin-right: 5px;"/>
+                                                <t t-out="crm_id.email_from"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Address</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.street" t-out="crm_id.street"/>
+                                            <p class="p-0 m-0" t-if="crm_id.street2" t-out="crm_id.street2"/>
+                                            <p class="p-0 m-0">
+                                                <t t-if="crm_id.city" t-out="crm_id.city"/>
+                                                <t t-if="crm_id.state_id" t-out="crm_id.state_id.name"/>
+                                                <t t-if="crm_id.zip" t-out="crm_id.zip"/>
+                                            </p>
+                                            <p class="p-0 m-0" t-if="crm_id.country_id" t-out="crm_id.country_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Company Name</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.partner_id" t-out="crm_id.partner_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Website</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.website" t-out="crm_id.website"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Sales Team</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.team_id" t-out="crm_id.team_id.name"/>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Tags</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-esc="', '.join(tag.name for tag in crm_id.tag_ids)"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Contact Name</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.contact_name" t-out="crm_id.contact_name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Job Position</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.function" t-out="crm_id.function"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Campaign</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.campaign_id" t-out="crm_id.campaign_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Medium</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.medium_id" t-out="crm_id.medium_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Source</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.source_id" t-out="crm_id.source_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Referred By</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.referred" t-out="crm_id.referred"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!--                <p t-out="crm_id.name"/>-->
+                <!--                <p t-out="crm_id.expected_revenue"/>-->
+                <!--                <p t-out="crm_id.probability"/>-->
+                <!--                <p t-out="crm_id.partner_id.name"/>-->
+                <!--                <p t-out="crm_id.user_id.name"/>-->
+                <!--                <p t-out="crm_id.email_from"/>-->
+                <!--                <p t-out="crm_id.date_deadline"/>-->
+                <!--                <p t-out="crm_id.phone"/>-->
+                <!--                <p t-out="crm_id.date_deadline"/>-->
+                <!--                <p t-out="crm_id.priority"/>-->
+                <!--                <p t-esc="', '.join(tag.name for tag in crm_id.tag_ids)"/>-->
+
+            </t>
+        </xpath>
+
     </template>
 </odoo>
