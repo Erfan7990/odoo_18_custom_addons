@@ -76,7 +76,8 @@ class CRMPortalController(CustomerPortal):
     @http.route(['/my/crm', '/my/crm/page/<int:page>'], type='http', auth="user", website=True)
     def my_crm_portal(self, page=1, sortby=None, filterby=None, **kwargs):
         sorted_list = self._crm_get_searchbar_sortings()
-        sortby = sortby if sortby in sorted_list else 'create_date desc'
+        if not sortby:
+            sortby = 'create_date desc'
         order_by = sorted_list[sortby]['order']
         crm_obj = request.env['crm.lead']
 
