@@ -5,7 +5,8 @@ from collections import OrderedDict
 from odoo.http import request
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from odoo.tools import date_utils
+from odoo.tools import date_utils, groupby as groupbyelem
+from operator import itemgetter
 
 
 class CRMPortalController(CustomerPortal):
@@ -62,6 +63,27 @@ class CRMPortalController(CustomerPortal):
         }
 
         return values
+
+    def _crm_get_search_list(self, search):
+        values = {
+             'All': {'input': 'all', 'label': _('All'), 'domain': []},
+            'name': {'input': 'name', 'label': _('Search in Name'), 'domain': [('name', 'ilike', '%' + search + '%')]},
+            'expected_revenue': {'input': 'expected_revenue', 'label': _('Search in Revenue'), 'domain': [('expected_revenue', 'ilike', '%' + search + '%')]},
+            'stage_id': {'input': 'stage_id', 'label': _('Search in Stage'), 'domain': [('stage_id.name', 'ilike', '%' + search + '%')]},
+            'priority': {'input': 'priority', 'label': _('Search in Priority'), 'domain': [('priority', 'ilike', '%' + search + '%')]},
+            'partner_id': {'input': 'partner_id', 'label': _('Search in Customer'), 'domain': [('partner_id.name', 'ilike', '%' + search + '%')]},
+        }
+        return values
+
+    def _crm_get_searchbar_groupby(self):
+        values = {
+            'none': {'input': 'none','label': _('None')},
+            'stage_id': {'input': 'stage_id', 'label': _('Stage')},
+            'contact_name': {'input': 'contact_name', 'label': _('Contact Name')},
+            'user_id': {'input': 'user_id', 'label': _('Salesperson')},
+        }
+        return values
+
     def _crm_get_searchbar_sortings(self):
         values = {
             'create_date desc': {'label': _('Newest'), 'order': 'create_date desc', 'sequence': 10},
@@ -74,12 +96,29 @@ class CRMPortalController(CustomerPortal):
         return values
 
     @http.route(['/my/crm', '/my/crm/page/<int:page>'], type='http', auth="user", website=True)
-    def my_crm_portal(self, page=1, sortby=None, filterby=None, **kwargs):
+    def my_crm_portal(self, page=1, sortby=None, filterby=None, groupby=None, search='', search_in='All', **kwargs):
         sorted_list = self._crm_get_searchbar_sortings()
+        group_list = self._crm_get_searchbar_groupby()
+        search_list = self._crm_get_search_list(search)
         if not sortby:
             sortby = 'create_date desc'
+        if not groupby:
+            groupby = 'stage_id'
+
         order_by = sorted_list[sortby]['order']
         crm_obj = request.env['crm.lead']
+        crm_group_by = group_list.get(groupby, {})
+        search_domain = search_list.get(search_in, {}).get('domain', [])
+        if not search_domain:
+            search_in = 'All'
+            search_domain = search_list.get('All', {}).get('domain', [])
+
+        if groupby in ('stage_id', 'contact_name', 'user_id'):
+            crm_group_by = crm_group_by.get('input')
+            order_by = crm_group_by + "," + order_by
+        else:
+            crm_group_by = ''
+
 
         search_filter = self._crm_get_date_ranges()
         if not filterby:
@@ -92,25 +131,42 @@ class CRMPortalController(CustomerPortal):
                            ('date_deadline', '<=', selected_range['end_date'])]
 
         domain = [('user_id', '!=', False)] + date_domain
-        crm_cnt = crm_obj.search_count(domain)
+        if search_domain:
+            domain = domain + search_domain
+        if groupby == 'none':
+            crm_cnt = crm_obj.search_count(domain)
+            pager_details = pager(
+                url='/my/crm',
+                total=crm_cnt,
+                url_args={'sortby': sortby, 'filterby': filterby, 'groupby': groupby, 'search': search, 'search_in': search_in},
+                page=page,
+                step=10
+            )
+            crm_datas = crm_obj.search(domain, limit=10, order=order_by, offset=pager_details['offset'])
+        else:
+            crm_datas = crm_obj.search(domain, order=order_by)
+            pager_details = None
 
-        pager_details = pager(
-            url='/my/crm',
-            total=crm_cnt,
-            url_args={'sortby': sortby, 'filterby': filterby},
-            page=page,
-            step=10
-        )
-        crm_datas = crm_obj.search(domain, limit=10, order=order_by, offset=pager_details['offset'])
+        if crm_group_by:
+            crm_group_list = [{crm_group_by: k, 'crm_datas': crm_obj.concat(*g)} for k,g in groupbyelem(crm_datas, itemgetter(crm_group_by))]
+        else:
+            crm_group_list = [{'crm_datas': crm_datas}]
+
 
         vals = {
+            'group_crms': crm_group_list,
             'crm_datas': crm_datas,
             'page_name': 'crm_list_view',
             'pager': pager_details,
             'default_url': '/my/crm',
             'sortby': sortby,
             'searchbar_sortings': sorted_list,
+            'searchbar_groupby': group_list,
+            'searchbar_inputs': search_list,
             'filterby': filterby,
+            'groupby': groupby,
+            'search': search,
+            'search_in': search_in,
             'searchbar_filters': OrderedDict(sorted(search_filter.items())),
         }
         return request.render('crm_portal.my_crm_portal', vals)

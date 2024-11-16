@@ -23,7 +23,13 @@
                 <a t-attf-href="/my/crm">CRM</a>
                 <span t-esc="' / ' + crm_id.name"/>
             </li>
+            <li t-if="page_name == 'crm_list_view'" style="margin-left:280px;">
+                <button type="button" t-on-click="openPopup" id="btnOpenForm" class="btn btn-primary">New
+                </button>
+            </li>
         </xpath>
+
+
     </template>
 
     <template id="my_crm_portal">
@@ -36,56 +42,95 @@
             <t t-if="not crm_datas">
                 <p class="alert alert-warning">There are currently no CRM.</p>
             </t>
-            <t t-call="portal.portal_table">
-                <thead>
-                    <tr class="active">
-                        <th class="text-left">Opportunity</th>
-                        <th class="text-left">Contact Name</th>
-                        <th class="text-left">Email</th>
-                        <th class="text-left">Salesperson</th>
-                        <th class="text-left">Expected Revenue</th>
-                        <th class="text-left">Stage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <t t-foreach="crm_datas" t-as="data">
-                        <tr>
-                            <td class="text-left">
-                                <a t-attf-href="/my/crm/#{data.id}">
-                                    <t t-out="data.name"/>
-                                </a>
 
-                            </td>
-                            <td class="text-left">
-                                <t t-out="data.contact_name"/>
-                            </td>
-                            <td class="text-left">
-                                <t t-out="data.email_from"/>
-                            </td>
-                            <td class="text-left">
-                                <t t-if="data.user_id.image_1920">
-                                    <img t-attf-src="data:image/png;base64,{{data.user_id.image_1920}}" alt="avatar"
-                                         class="rounded-circle img-fluid"
-                                         style="width:30px;height:30px;"/>
-                                </t>
-                                <t t-else="">
-                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                                         alt="avatar"
-                                         class="rounded-circle img-fluid" style="width:30px;height:30px;"/>
-                                </t>
-                                <t t-out="data.user_id.name"/>
-                            </td>
-                            <td class="text-left">
-                                <t t-out="data.expected_revenue"/>
-                            </td>
-                            <td class="text-left">
-                                <t t-out="data.stage_id.name"/>
-                            </td>
+
+            <t t-if="group_crms">
+                <t t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <t t-set="group_by_in_header_list" t-value="['stage_id', 'contact_name', 'user_id']"></t>
+                            <t t-set="number_of_header" t-value="8"></t>
+                            <!-- Computes the right colspan once and use it everywhere -->
+                            <t t-set="grouped_tasks_colspan"
+                               t-value="number_of_header - 1 if groupby in group_by_in_header_list else number_of_header"></t>
+
+                            <th class="text-left">Opportunity</th>
+                            <th t-if=" groupby != 'contact_name'" class="text-left">Contact Name</th>
+                            <th class="text-left">Email</th>
+                            <th t-if=" groupby != 'user_id'" class="text-left">Salesperson</th>
+                            <th class="text-left">Expected Revenue</th>
+                            <th t-if=" groupby != 'stage_id'" class="text-left">Stage</th>
                         </tr>
+                    </thead>
+                    <t t-foreach="group_crms" t-as="crm_datas">
+                        <tbody t-if="crm_datas">
+                            <tr t-if="not groupby == 'none'" class="table-light">
 
+                                <th t-if="groupby == 'stage_id'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                                    <!-- This div is necessary for documents_project_sale -->
+                                    <div name="stage_id" class="d-flex w-100 align-items-center">
+                                        <span class="text-truncate" t-field="crm_datas['stage_id'].name"/>
+                                    </div>
+                                </th>
+                                <th t-if="groupby == 'contact_name'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                                    <span t-if="crm_datas['contact_name']"
+                                          class="text-truncate">
+                                        <t t-out="crm_datas['contact_name']"/>
+                                    </span>
+                                    <span t-else="">No Customer</span>
+                                </th>
+                                <th t-if="groupby == 'user_id'" t-attf-colspan="{{grouped_tasks_colspan}}">
+                                    <span t-if="crm_datas['user_id']"
+                                          class="text-truncate"
+                                          t-out="crm_datas['user_id'].name"/>
+                                    <span t-else="">No Salesperson</span>
+                                </th>
+                            </tr>
+                        </tbody>
+
+                        <tbody t-if="crm_datas">
+                            <t t-foreach="crm_datas['crm_datas']" t-as="data">
+                                <tr>
+                                    <td class="text-left">
+                                        <a t-if="data.id" t-attf-href="/my/crm/#{data.id}">
+                                            <t t-out="data.name"/>
+                                        </a>
+
+                                    </td>
+                                    <td t-if="groupby != 'contact_name'" class="text-left">
+                                        <t t-out="data.contact_name"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <t t-out="data.email_from"/>
+                                    </td>
+                                    <td t-if="groupby != 'user_id'" class="text-left">
+                                        <t t-if="data.user_id.image_1920">
+                                            <img t-attf-src="data:image/png;base64,{{data.user_id.image_1920}}"
+                                                 alt="avatar"
+                                                 class="rounded-circle img-fluid"
+                                                 style="width:30px;height:30px;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                                                 alt="avatar"
+                                                 class="rounded-circle img-fluid" style="width:30px;height:30px;"/>
+                                        </t>
+                                        <t t-out="data.user_id.name"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <t t-out="data.expected_revenue"/>
+                                    </td>
+                                    <td t-if="groupby != 'stage_id'" class="text-left">
+                                        <t t-out="data.stage_id.name"/>
+                                    </td>
+                                </tr>
+
+                            </t>
+                        </tbody>
                     </t>
-                </tbody>
+                </t>
             </t>
+
         </t>
     </template>
 
@@ -93,6 +138,7 @@
         <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
             <t t-if="page_name == 'crm_form_view'">
                 <section>
+                    <button type="button" id="btnOpenForm" class="btn btn-primary">New</button>
                     <div class="container">
                         <div class="col">
                             <div class="row-3 d-flex justify-content-between align-items-center px-2 py-1"
@@ -206,7 +252,8 @@
                                             <strong>Campaign</strong>
                                         </div>
                                         <div class="col">
-                                            <p class="p-0 m-0" t-if="crm_id.campaign_id" t-out="crm_id.campaign_id.name"/>
+                                            <p class="p-0 m-0" t-if="crm_id.campaign_id"
+                                               t-out="crm_id.campaign_id.name"/>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -237,21 +284,42 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="container py-4" data-anchor="true">
+                        <h3>History</h3>
+                        <t t-call="portal.message_thread">
+                            <t t-set="object" t-value="crm_id"/>
+                        </t>
+                    </div>
                 </section>
-
-
-                <!--                <p t-out="crm_id.name"/>-->
-                <!--                <p t-out="crm_id.expected_revenue"/>-->
-                <!--                <p t-out="crm_id.probability"/>-->
-                <!--                <p t-out="crm_id.partner_id.name"/>-->
-                <!--                <p t-out="crm_id.user_id.name"/>-->
-                <!--                <p t-out="crm_id.email_from"/>-->
-                <!--                <p t-out="crm_id.date_deadline"/>-->
-                <!--                <p t-out="crm_id.phone"/>-->
-                <!--                <p t-out="crm_id.date_deadline"/>-->
-                <!--                <p t-out="crm_id.priority"/>-->
-                <!--                <p t-esc="', '.join(tag.name for tag in crm_id.tag_ids)"/>-->
-
+                <section>
+                    <div class="form-popup-bg">
+                        <div class="form-container">
+                            <button id="btnCloseForm" class="close-button">X</button>
+                            <h1>Contact Us</h1>
+                            <p>For more information, please complete this form.</p>
+                            <form action="">
+                                <div class="form-group">
+                                    <label for="">Name</label>
+                                    <input type="text" class="form-control"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Company Name</label>
+                                    <input class="form-control" type="text"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">E-Mail Address</label>
+                                    <input class="form-control" type="text"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Phone Number</label>
+                                    <input class="form-control" type="text"/>
+                                </div>
+                                <button type="submit">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
             </t>
         </xpath>
 

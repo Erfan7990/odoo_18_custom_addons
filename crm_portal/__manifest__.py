@@ -25,9 +25,18 @@ Long description of module's purpose
         # 'security/ir.model.access.csv',
         'views/crm_portal_view.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            # 'crm_portal/static/src/css/style.css',
+            # 'crm_portal/static/src/js/crm_portal_scripts.js',
+            # "crm_portal/static/src/xml/*.xml",
+        ],
+        "web.assets_qweb": [
+
+        ],
+    },
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
     ],
 }
-
