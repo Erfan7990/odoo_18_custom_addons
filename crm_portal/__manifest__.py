@@ -27,11 +27,10 @@ Long description of module's purpose
     ],
     'assets': {
         'web.assets_frontend': [
-            # 'crm_portal/static/src/css/style.css',
-            # 'crm_portal/static/src/js/crm_portal_scripts.js',
-            # "crm_portal/static/src/xml/*.xml",
-        ],
-        "web.assets_qweb": [
+            # 'crm_portal/static/src/xml/modal_form_templates.xml',
+            'crm_portal/static/src/css/style.css',
+            # 'crm_portal/static/src/js/portal_modal.js',
+            # 'crm_portal/static/src/js/ModalForm.js',  # Include the ModalForm.js file
 
         ],
     },

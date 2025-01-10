@@ -1,26 +1,50 @@
-.popup-form {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    padding: 20px;
-    border-radius: 8px;
-    min-width: 300px;
-}
-.popup-form .popup-content {
+
+.new_crm_form {
     position: relative;
+    align-items: center;
+    background-color: #f1f1f1;
+    width: 600px;
+    border-radius: 5px;
+    padding: 30px 20px;
+    left: 25%;
+
 }
-.popup-form .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 20px;
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="email"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    outline: none !important;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    border-bottom: 1px solid #cccccc;
+
 }
-.hidden {
+
+.star-rating {
+    direction: rtl;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.star-rating input[type="radio"] {
     display: none;
 }
+
+.star-rating label.star {
+    font-size: 24px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.star-rating input[type="radio"]:checked ~ label.star,
+.star-rating label.star:hover,
+.star-rating label.star:hover ~ label.star {
+    color: #f39c12; /* Gold color */
+}
+

@@ -173,7 +173,9 @@ class CRMPortalController(CustomerPortal):
 
     @http.route(['/my/crm/<model("crm.lead"):crm_id>'], type='http', auth="user", website=True)
     def my_crm_portal_form_view(self, crm_id, **kwargs):
+        order_id = request.env['sale.order'].search([('origin', '=', crm_id.name)])
         vals = {
+            'order_id': order_id,
             'crm_id': crm_id,
             'page_name': 'crm_form_view'
         }
@@ -189,3 +191,169 @@ class CRMPortalController(CustomerPortal):
 
         return request.render('crm_portal.my_crm_portal_form_view', vals)
 
+    @http.route(['/edit/crm/<model("crm.lead"):crm_id>'], method=["POST", "GET"], type='http', auth="user", website=True)
+    def my_crm_portal_edit_form_view(self, crm_id, **kwargs):
+        states = request.env['res.country.state'].search([])
+        countries = request.env['res.country'].search([])
+        teams = request.env['crm.team'].search([])
+        tags = request.env['crm.tag'].search([])
+        campaigns = request.env['utm.campaign'].search([])
+        medias = request.env['utm.medium'].search([])
+        sources = request.env['utm.source'].search([])
+        partner_ids = request.env['res.partner'].search([])
+        vals = {
+            'crm_id': crm_id,
+            'page_name': 'crm_edit_form_view',
+            'states': states,
+            'countries': countries,
+            'teams': teams,
+            'tags': tags,
+            'campaigns': campaigns,
+            'medias': medias,
+            'sources': sources,
+            'partner_ids': partner_ids,
+        }
+        val_list={}
+        crm_records = request.env['crm.lead'].search([('id', '=', crm_id.id)])
+        if request.httprequest.method == 'POST':
+            partner_id = kwargs.get('partner_id')
+            state_id = kwargs.get('state_id')
+            country_id = kwargs.get('country_id')
+            team_id = kwargs.get('team_id')
+            tag_ids = kwargs.get('tag_ids')
+            campaign_id = kwargs.get('campaign_id')
+            medium_id = kwargs.get('medium_id')
+            source_id = kwargs.get('source_id')
+            if crm_id.partner_id.id == int(partner_id):
+                val_list['name'] = kwargs.get('name') or False
+                val_list['email_from'] = kwargs.get('email_from') or False
+                val_list['phone'] = kwargs.get('phone') or False
+                val_list['street'] = kwargs.get('street') or False
+                val_list['city'] = kwargs.get('city') or False
+                val_list['state_id'] = int(state_id) if state_id and state_id.strip() else False
+                val_list['zip'] = kwargs.get('zip') or False
+                val_list['country_id'] = int(country_id) if country_id and country_id.strip() else False
+                val_list['partner_name'] = kwargs.get('partner_name') or False
+                val_list['website'] = kwargs.get('website') or False
+                val_list['team_id'] = int(team_id) if team_id and team_id.strip() else False
+                val_list['tag_ids'] = [int(tag_ids) if tag_ids and tag_ids.strip() else False]
+                val_list['campaign_id'] = int(campaign_id) if campaign_id and campaign_id.strip() else False
+                val_list['contact_name'] = kwargs.get('contact_name') or False
+                val_list['medium_id'] = int(medium_id) if medium_id and medium_id.strip() else False
+                val_list['source_id'] = int(source_id) if source_id and source_id.strip() else False
+                val_list['referred'] = kwargs.get('referred') or False
+            else:
+                val_list['partner_id'] = int(partner_id) if partner_id and partner_id.strip() else False
+                val_list['campaign_id'] = int(campaign_id) if campaign_id and campaign_id.strip() else False
+                val_list['medium_id'] = int(medium_id) if medium_id and medium_id.strip() else False
+                val_list['source_id'] = int(source_id) if source_id and source_id.strip() else False
+                val_list['referred'] = kwargs.get('referred') or False
+            crm_records.write(val_list)
+            return request.redirect('/my/crm/%s' % crm_id.id)
+
+
+
+        return request.render('crm_portal.crm_portal_edit_form_view', vals)
+
+    @http.route(['/my/quotation/<model("crm.lead"):crm_id>/<model("sale.order"):order_id>'], type='http', auth='user', website=True)
+    def my_quotation_form(self, order_id, crm_id, **kw):
+        vals = {
+            'crm_id': crm_id,
+            'order_id': order_id,
+            'page_name': 'my_quotation_form',
+        }
+        return request.render('crm_portal.crm_quotation_form_view', vals)
+
+    @http.route(['/my/crm/<model("crm.lead"):crm_id>/new/quotation'], type='http', method=["POST", "GET"], auth='user', website=True)
+    def create_new_quotation(self, crm_id, **kwargs):
+        payment_term_ids = request.env['account.payment.term'].search([])
+        product_ids = request.env['product.product'].search([('type', '=', 'service')])
+        vals = {
+            'product_ids': product_ids,
+            'payment_term_ids': payment_term_ids,
+            'crm_id': crm_id,
+            'page_name': 'new_quotation_create_form',
+        }
+
+        if request.httprequest.method == 'POST':
+            partner_id = crm_id.partner_id.id
+            validity_date = kwargs.get('validity_date')
+            date_order = kwargs.get('date_order')
+            payment_term_ids = kwargs.get('payment_term_ids')
+            product_ids = kwargs.get('product_ids')
+            quantity = kwargs.get('quantity')
+            discount = kwargs.get('discount') if kwargs.get('discount') else '0'
+            unit_price = kwargs.get('unit_price')
+            try:
+                # Convert validity_date to a date object
+                validity_date = datetime.strptime(validity_date, '%Y-%m-%d').date() if validity_date else None
+                # Convert date_order to a datetime object (correct format with 'T')
+                date_order = datetime.strptime(date_order, '%Y-%m-%dT%H:%M') if date_order else None
+            except ValueError as e:
+                # Handle invalid date/datetime formats
+                return request.render('crm_portal.error_page', {
+                    'error_message': f"Invalid date format: {e}"
+                })
+            uom_id = request.env['product.product'].search([('id', '=', int(product_ids))]).uom_id
+            val_list = {
+                'partner_id': partner_id,
+                'validity_date': validity_date,
+                'date_order': date_order,
+                'origin': crm_id.name,
+                'payment_term_id': int(payment_term_ids),
+                'order_line': [(0,0, {
+                    'product_id': int(product_ids),
+                    'product_uom_qty': int(quantity),
+                    'product_uom': uom_id.id,
+                    'discount': float(discount),
+                    'price_unit': float(unit_price),
+                })]
+            }
+            order_id = request.env['sale.order'].create(val_list)
+            return request.redirect('/my/quotation/%s/%s' % (crm_id.id, order_id.id))
+
+        return request.render('crm_portal.crm_create_new_quotation',vals)
+
+
+    @http.route(['/new/crm'], type='http', method=["POST", "GET"], auth='user', website=True)
+    def create_new_crm(self, **kwargs):
+
+
+        partner_ids = request.env['res.partner'].sudo().search([])
+        tag_ids = request.env['crm.tag'].sudo().search([])
+        salesperson_id = request.env['res.users'].sudo().search([('id', '=', request.env.user.id)])
+        priority = [
+            ('0', 'Low'),
+            ('1', 'Medium'),
+            ('2', 'High'),
+            ('3', 'Very High'),
+        ]
+
+        vals = {
+            'page_name': 'crm_form_create',
+            'partner_ids': partner_ids,
+            'tag_ids': tag_ids,
+            'priority': priority,
+            'salesperson_id': salesperson_id,
+        }
+        if request.httprequest.method == 'POST':
+            if kwargs.get('tag_ids'):
+                tag_values = [int(id) for id in kwargs.get('tag_ids').split(',')]
+            else:
+                tag_values = []
+            partner_id = int(kwargs.get('partner_ids'))
+            exist_partner_id = request.env['res.partner'].search([('id', '=', partner_id)])
+            vals_list = {
+                'name': kwargs.get('name'),
+                'expected_revenue': kwargs.get('expected_revenue'),
+                'partner_id': exist_partner_id.id,
+                'user_id': salesperson_id.id,
+                'date_deadline': kwargs.get('date_deadline'),
+                'priority': kwargs.get('priority'),
+                'tag_ids': tag_values,
+
+            }
+            if vals_list:
+                crm_id = request.env['crm.lead'].create(vals_list)
+
+        return request.render('crm_portal.my_crm_portal_create_new_crm', vals)
