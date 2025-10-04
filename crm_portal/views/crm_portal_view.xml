@@ -23,9 +23,32 @@
                 <a t-attf-href="/my/crm">CRM</a>
                 <span t-esc="' / ' + crm_id.name"/>
             </li>
-            <li t-if="page_name == 'crm_list_view'" style="margin-left:280px;">
-                <button type="button" t-on-click="openPopup" id="btnOpenForm" class="btn btn-primary">New
-                </button>
+            <li t-if="page_name == 'crm_list_view'" style="margin-left:250px;">
+                <a type="button" t-attf-href="/new/crm" class="btn btn-primary breadcrumb-item">New
+                </a>
+            </li>
+            <li t-if="page_name == 'crm_form_create'" class="breadcrumb-item">
+                <a t-attf-href="/my/crm">CRM</a>
+                <span t-esc="' / ' + 'new'"/>
+            </li>
+            <li t-if="page_name == 'crm_edit_form_view'" class="breadcrumb-item">
+                <a t-attf-href="/my/crm/#{crm_id.id}">
+                    <t t-esc="crm_id.name"/>
+                </a>
+                <span t-esc="' / ' + 'edit'"/>
+            </li>
+            <li t-if="page_name == 'new_quotation_create_form'" class="breadcrumb-item">
+                <a t-attf-href="/my/crm/#{crm_id.id}">
+                    <t t-esc="crm_id.name"/>
+                </a>
+                <span t-esc="' / ' + 'New Quotation'"/>
+            </li>
+
+            <li t-if="page_name == 'my_quotation_form'" class="breadcrumb-item">
+                <a t-attf-href="/my/crm/#{crm_id.id}">
+                    <t t-esc="crm_id.name"/>
+                </a>
+                <span t-esc="' / ' + order_id.name"/>
             </li>
         </xpath>
 
@@ -134,11 +157,419 @@
         </t>
     </template>
 
+    <template id="crm_portal_edit_form_view" inherit_id="portal.portal_sidebar">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-if="page_name == 'crm_edit_form_view'">
+                <section>
+                    <form method="post">
+                        <button type="submit" class="btn btn-primary mb-2">Save</button>
+                        <!--                        <button type="submit" class="btn btn-primary my-4">Submit</button>-->
+                        <div class="container">
+
+                            <div class="col">
+                                <div class="row-3 d-flex justify-content-between align-items-center px-2 py-1"
+                                     style="border-bottom: 1px solid #cecece; background-color: #f9f9f9;">
+
+
+                                    <div class="form-group">
+                                        <input type="hidden" name="csrf_token"
+                                               t-att-value="request.csrf_token()"/>
+                                        <input type="text" class="form-control" id="name" name="name"
+                                               style="border: none;"
+                                               t-att-value="crm_id.name or ''"/>
+
+                                    </div>
+
+                                    <div>
+                                        <t t-set="stars" t-value="int(crm_id.priority) if crm_id.priority else 0"/>
+                                        <t t-foreach="range(stars)" t-as="star">
+                                            <i class="fa fa-star" style="color: #FFD700;"></i> <!-- Filled star -->
+                                        </t>
+                                        <t t-foreach="range(3 - stars)" t-as="star">
+                                            <i class="fa fa-star-o" style="color: #FFD700;"></i> <!-- Empty star -->
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="row-9 pt-3 d-flex justify-content-between">
+                                    <div class="col-6" style="margin-right: 20px;">
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Customer</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group" t-if="crm_id.partner_name">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="partner_name"
+                                                           name="partner_name"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.partner_name or ''"/>
+                                                </div>
+
+                                                <div class="form-group" t-if="crm_id.phone">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="phone" name="phone"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.phone or ''"/>
+                                                </div>
+                                                <div class="form-group" t-if="crm_id.mobile">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="mobile" name="mobile"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.mobile or ''"/>
+                                                </div>
+                                                <div class="form-group" t-if="crm_id.email_from">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="email_from"
+                                                           name="email_from"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.email_from or ''"/>
+                                                </div>
+                                                <!--                                                <p class="p-0 m-0" t-if="crm_id.partner_name"-->
+                                                <!--                                                   t-out="crm_id.partner_name"/>-->
+                                                <!--                                                <p class="p-0 m-0 d-flex align-items-center text-left"-->
+                                                <!--                                                   t-if="crm_id.phone">-->
+                                                <!--                                                    -->
+                                                <!--                                                    <t t-out="crm_id.phone"/>-->
+                                                <!--                                                </p>-->
+                                                <!--                                                <p class="p-0 m-0 d-flex align-items-center text-left"-->
+                                                <!--                                                   t-if="crm_id.mobile">-->
+                                                <!--                                                    <i class="fa fa-mobile" style="margin-right: 10px;"/>-->
+                                                <!--                                                    <t t-out="crm_id.mobile"/>-->
+                                                <!--                                                </p>-->
+                                                <!--                                                <p class="p-0 m-0 d-flex align-items-center text-left"-->
+                                                <!--                                                   t-if="crm_id.email_from">-->
+                                                <!--                                                    <i class="fa fa-envelope" style="margin-right: 5px;"/>-->
+                                                <!--                                                    <t t-out="crm_id.email_from"/>-->
+                                                <!--                                                </p>-->
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Address</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group" t-if="crm_id.street">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="street" name="street"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.street or ''"/>
+                                                </div>
+                                                <div class="form-group" t-if="crm_id.street2">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="street2" name="street2"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.street2 or ''"/>
+                                                </div>
+
+                                                <!--                                                <p class="p-0 m-0" t-if="crm_id.street" t-out="crm_id.street"/>-->
+                                                <!--                                                <p class="p-0 m-0" t-if="crm_id.street2" t-out="crm_id.street2"/>-->
+                                                <p class="p-0 m-0 d-flex ">
+                                                    <span class="form-group" t-if="crm_id.city">
+                                                        <input type="hidden" name="csrf_token"
+                                                               t-att-value="request.csrf_token()"/>
+                                                        <input type="text" class="form-control" id="city"
+                                                               name="city"
+                                                               style="border-bottom: 1px solid #ccc;"
+                                                               t-att-value="crm_id.city or ''"/>
+                                                    </span>
+                                                    <span class="form-group">
+                                                        <select class="form-control" id="state_id" name="state_id">
+                                                            <option t-att-value="crm_id.state_id.id or ''"
+                                                                    t-if="crm_id.state_id" selected="selected">
+                                                                <t t-esc="crm_id.state_id.name"/>
+                                                            </option>
+                                                            <t t-foreach="states" t-as="state">
+                                                                <option t-att-value="state.id"
+                                                                        t-if="not crm_id.state_id or crm_id.state_id.id != state.id">
+                                                                    <t t-esc="state.name"/>
+                                                                </option>
+                                                            </t>
+                                                        </select>
+                                                    </span>
+
+                                                    <span class="form-group" t-if="crm_id.zip">
+                                                        <input type="hidden" name="csrf_token"
+                                                               t-att-value="request.csrf_token()"/>
+                                                        <input type="text" class="form-control" id="zip"
+                                                               name="zip"
+                                                               style="border-bottom: 1px solid #ccc;"
+                                                               t-att-value="crm_id.zip or ''"/>
+                                                    </span>
+
+                                                </p>
+
+                                                <div class="form-group">
+                                                    <select class="form-control" id="country_id" name="country_id">
+                                                        <option t-att-value="crm_id.country_id.id or ''"
+                                                                t-if="crm_id.country_id" selected="selected">
+                                                            <t t-esc="crm_id.country_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="countries" t-as="country">
+                                                            <option t-att-value="country.id"
+                                                                    t-if="not crm_id.country_id or crm_id.country_id.id != country.id">
+                                                                <t t-esc="country.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Company Name</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="partner_id" name="partner_id">
+                                                        <option t-att-value="crm_id.partner_id.id or ''"
+                                                                t-if="crm_id.partner_id" selected="selected">
+                                                            <t t-esc="crm_id.partner_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="partner_ids" t-as="partner_id">
+                                                            <option t-att-value="partner_id.id"
+                                                                    t-if="not crm_id.partner_id or crm_id.partner_id.id != partner_id.id">
+                                                                <t t-esc="partner_id.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Website</strong>
+                                            </div>
+                                            <div class="col">
+                                                <span class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="website"
+                                                           name="website"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.website or ''"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Sales Team</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="team_id" name="team_id">
+                                                        <option t-att-value="crm_id.team_id.id or ''"
+                                                                t-if="crm_id.team_id" selected="selected">
+                                                            <t t-esc="crm_id.team_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="teams" t-as="team">
+                                                            <option t-att-value="team.id"
+                                                                    t-if="not crm_id.team_id or crm_id.team_id.id != team.id">
+                                                                <t t-esc="team.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="row ">
+                                            <div class="col">
+                                                <strong>Expected Revenue</strong>
+                                            </div>
+                                            <div class="col">
+                                                <span class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="expected_revenue"
+                                                           name="expected_revenue"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.expected_revenue or ''"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col">
+                                                <strong>Tags</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="tag_ids" name="tag_ids">
+                                                        <option t-att-value="crm_id.tag_ids.id or ''"
+                                                                t-if="crm_id.tag_ids" selected="selected">
+                                                            <t t-esc="crm_id.tag_ids.name"/>
+                                                        </option>
+                                                        <t t-foreach="tags" t-as="tag">
+                                                            <option t-att-value="tag.id"
+                                                                    t-if="not crm_id.tag_ids or crm_id.tag_ids.id != tag.id">
+                                                                <t t-esc="tag.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Contact Name</strong>
+                                            </div>
+                                            <div class="col">
+                                                <span class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="contact_name"
+                                                           name="contact_name"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.contact_name or ''"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Job Position</strong>
+                                            </div>
+                                            <div class="col">
+                                                <span class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="function"
+                                                           name="function"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.function or ''"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Campaign</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="campaign_id" name="campaign_id">
+                                                        <option value="" t-if="not crm_id.campaign_id"
+                                                                class="text-muted">
+                                                        </option>
+                                                        <option t-att-value="crm_id.campaign_id.id or ''"
+                                                                t-if="crm_id.campaign_id" selected="selected">
+                                                            <t t-esc="crm_id.campaign_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="campaigns" t-as="campaign">
+                                                            <option t-att-value="campaign.id"
+                                                                    t-if="not crm_id.campaign_id or crm_id.campaign_id.id != campaign.id">
+                                                                <t t-esc="campaign.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Medium</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="medium_id" name="medium_id">
+                                                        <option value="" t-if="not crm_id.medium_id" class="text-muted">
+
+                                                        </option>
+                                                        <option t-att-value="crm_id.medium_id.id or ''"
+                                                                t-if="crm_id.medium_id" selected="selected">
+                                                            <t t-esc="crm_id.medium_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="medias" t-as="media">
+                                                            <option t-att-value="media.id"
+                                                                    t-if="not crm_id.medium_id or crm_id.medium_id.id != media.id">
+                                                                <t t-esc="media.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Source</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select class="form-control" id="source_id" name="source_id">
+                                                        <option value="" t-if="not crm_id.source_id" class="text-muted">
+
+                                                        </option>
+                                                        <option t-att-value="crm_id.source_id.id or ''"
+                                                                t-if="crm_id.source_id" selected="selected">
+                                                            <t t-esc="crm_id.source_id.name"/>
+                                                        </option>
+                                                        <t t-foreach="sources" t-as="source">
+                                                            <option t-att-value="source.id"
+                                                                    t-if="not crm_id.source_id or crm_id.source_id.id != source.id">
+                                                                <t t-esc="source.name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Referred By</strong>
+                                            </div>
+                                            <div class="col">
+                                                <span class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="text" class="form-control" id="referred"
+                                                           name="referred"
+                                                           style="border-bottom: 1px solid #ccc;"
+                                                           t-att-value="crm_id.referred or ''"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </section>
+            </t>
+        </xpath>
+
+    </template>
+
     <template id="my_crm_portal_form_view" inherit_id="portal.portal_sidebar">
         <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
             <t t-if="page_name == 'crm_form_view'">
                 <section>
-                    <button type="button" id="btnOpenForm" class="btn btn-primary">New</button>
+                    <div class="mb-2">
+                        <a t-if="crm_id.id" t-attf-href="/edit/crm/#{crm_id.id}" type="button" class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        <a t-if="order_id.id" t-attf-href="/my/quotation/#{crm_id.id}/#{order_id.id}" type="button"
+                           class="btn btn-success">
+                            My Quotation
+                        </a>
+                        <a t-else="" t-attf-href="/my/crm/#{crm_id.id}/new/quotation" type="button"
+                           class="btn btn-primary">
+                            New Quotation
+                        </a>
+                    </div>
+
                     <div class="container">
                         <div class="col">
                             <div class="row-3 d-flex justify-content-between align-items-center px-2 py-1"
@@ -225,6 +656,15 @@
                                 <div class="col-6">
                                     <div class="row">
                                         <div class="col">
+                                            <strong>Expected Revenue</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="crm_id.expected_revenue"
+                                               t-out="crm_id.expected_revenue"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col">
                                             <strong>Tags</strong>
                                         </div>
                                         <div class="col">
@@ -292,36 +732,501 @@
                         </t>
                     </div>
                 </section>
-                <section>
-                    <div class="form-popup-bg">
-                        <div class="form-container">
-                            <button id="btnCloseForm" class="close-button">X</button>
-                            <h1>Contact Us</h1>
-                            <p>For more information, please complete this form.</p>
-                            <form action="">
-                                <div class="form-group">
-                                    <label for="">Name</label>
-                                    <input type="text" class="form-control"/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="">Company Name</label>
-                                    <input class="form-control" type="text"/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="">E-Mail Address</label>
-                                    <input class="form-control" type="text"/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="">Phone Number</label>
-                                    <input class="form-control" type="text"/>
-                                </div>
-                                <button type="submit">Submit</button>
-                            </form>
-                        </div>
-                    </div>
-                </section>
+
             </t>
         </xpath>
 
     </template>
+
+    <template id="my_crm_portal_create_new_crm">
+        <t t-call="portal.portal_layout">
+            <!--            <t t-call="portal.portal_table">-->
+            <!--            <div class="alert alert-success mt-4" role="alert" t-if="success_msg">-->
+            <!--                <t t-out="success_msg"/>-->
+            <!--            </div>-->
+            <!--            <t t-foreach="error_list" t-as="error">-->
+            <!--                <div class="alert alert-danger mt-4" role="alert">-->
+            <!--                    <t t-out="error"/>-->
+            <!--                </div>-->
+            <!--            </t>-->
+            <div id="new_crm_form" class="new_crm_form">
+                <div class="container">
+                    <form method="post">
+                        <h2>Create New Lead</h2>
+                        <div class="row my-3">
+                            <div class="col-8">
+                                <div class="form-group">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="text" class="form-control custom_form" id="name" name="name"
+                                           placeholder="Enter Lead Title"/>
+
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-group">
+                                    <div class="star-rating">
+                                        <input type="radio" name="priority" id="priority-4" value="3"/>
+                                        <label for="priority-4" class="star">&#9733;</label>
+                                        <input type="radio" name="priority" id="priority-3" value="2"/>
+                                        <label for="priority-3" class="star">&#9733;</label>
+                                        <input type="radio" name="priority" id="priority-2" value="1"/>
+                                        <label for="priority-2" class="star">&#9733;</label>
+                                        <input type="radio" name="priority" id="priority-1" value="0"/>
+                                        <label for="priority-1" class="star">&#9733;</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row mt-3">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="text" class="form-control custom_form" id="expected_revenue"
+                                           name="expected_revenue"
+                                           placeholder="Expected Revenue"/>
+                                </div>
+                            </div>
+
+
+                            <!--  col-md-6   -->
+                        </div>
+                        <!--  row   -->
+
+
+                        <div class="row mt-4">
+                            <div class="col">
+                                <div class="form-group">
+                                    <select name="partner_ids" id="partner_ids" class="form-control">
+                                        <option value="">Select Contact</option>
+                                        <t t-foreach="partner_ids" t-as="partner_id">
+                                            <t t-if="partner_id.id">
+                                                <option t-att-value="partner_id.id">
+                                                    <t t-out="partner_id.name"/>
+                                                </option>
+                                            </t>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!--  col-md-6   -->
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <t t-if="salesperson_id.id">
+                                        <input type="text" class="form-control custom_form" id="salesperson_id"
+                                               name="salesperson_id"
+                                               t-att-value="salesperson_id.name"
+                                               placeholder="Salesperson"/>
+                                    </t>
+
+                                </div>
+                            </div>
+                            <!--  col-md-6   -->
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="date" class="form-control custom_form" id="date_deadline"
+                                           name="date_deadline"
+                                           placeholder="Expected Closing"/>
+                                </div>
+                            </div>
+                            <!--  col-md-6   -->
+                            <!--                            <div class="col-md-4">-->
+                            <!--                                <div class="form-group">-->
+                            <!--                                    <select name="tag_ids" id="tag_ids" class="form-control" multiple>-->
+                            <!--                                        <option value="">Select Tags</option>-->
+                            <!--                                        <t t-foreach="tag_ids" t-as="tag_id">-->
+                            <!--                                            <t t-if="tag_id.id">-->
+                            <!--                                                <option t-att-value="tag_id.id">-->
+                            <!--                                                    <t t-out="tag_id.name"/>-->
+                            <!--                                                </option>-->
+                            <!--                                            </t>-->
+                            <!--                                        </t>-->
+                            <!--                                    </select>-->
+                            <!--                                </div>-->
+
+                            <!--                            </div>-->
+
+
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col">
+                                <div class="form-group">
+                                    <select name="tag_ids" id="tag_ids" class="form-control" multiple="multiple">
+                                        <option value="" disabled="disabled">Select Tags</option>
+                                        <t t-foreach="tag_ids" t-as="tag_id">
+                                            <t t-if="tag_id.id">
+                                                <option t-att-value="tag_id.id">
+                                                    <t t-out="tag_id.name"/>
+                                                </option>
+                                            </t>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary my-4">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="crm_create_new_quotation" inherit_id="portal.portal_sidebar">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-if="page_name == 'new_quotation_create_form'">
+                <!--                #F8F9FA-->
+                <section>
+                    <form method="post">
+                        <div class="container">
+                            <div class="col">
+                                <div>
+                                    <h2>Create New Quotation</h2>
+                                </div>
+
+                                <div class="row-9 pt-3 d-flex justify-content-between">
+                                    <div class="col-6"
+                                         style="border: 1px solid #95a5a6; padding: 30px 20px; border-radius: 10px;">
+                                        <p style="
+                                    font-weight: bold;
+                                    margin-top:-45px;
+                                    background-color:#ffffff;
+                                    width:190px;
+                                    padding-left: 10px;
+                                    ">
+                                            Customer Information
+                                        </p>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Customer</strong>
+                                            </div>
+                                            <div class="col">
+                                                <p class="p-0 m-0" t-if="crm_id.partner_name"
+                                                   t-out="crm_id.partner_name"/>
+                                                <p class="p-0 m-0" t-if="crm_id.street" t-out="crm_id.street"/>
+                                                <p class="p-0 m-0" t-if="crm_id.street2" t-out="crm_id.street2"/>
+                                                <p class="p-0 m-0">
+                                                    <t t-if="crm_id.city" t-out="crm_id.city"/>
+                                                    <t t-if="crm_id.state_id" t-out="crm_id.state_id.name"/>
+                                                    <t t-if="crm_id.zip" t-out="crm_id.zip"/>
+                                                </p>
+                                                <p class="p-0 m-0" t-if="crm_id.country_id"
+                                                   t-out="crm_id.country_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Expiration</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="date" class="form-control " id="validity_date"
+                                                           name="validity_date"
+                                                           placeholder="Expiration"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Quotation Date</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="datetime-local" class="form-control "
+                                                           id="date_order"
+                                                           name="date_order" placeholder="Expiration"
+                                                           min="2025-01-01T00:00" max="2025-12-31T23:59"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Payment Terms</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select name="payment_term_ids" id="payment_term_ids"
+                                                            class="form-control">
+                                                        <option value="">Select Payment Terms</option>
+                                                        <t t-foreach="payment_term_ids" t-as="payment_term_id">
+                                                            <t t-if="payment_term_id.id">
+                                                                <option t-att-value="payment_term_id.id">
+                                                                    <t t-out="payment_term_id.name"/>
+                                                                </option>
+                                                            </t>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6"
+                                         style="border: 1px solid #95a5a6; padding: 30px 20px; border-radius: 10px;">
+                                        <p style="
+                                    font-weight: bold;
+                                    margin-top:-45px;
+                                    background-color:#ffffff;
+                                    width:190px;
+                                    padding-left: 15px;
+                                    ">
+                                            Product Information
+                                        </p>
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Service</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <select name="product_ids" id="product_ids" class="form-control">
+                                                        <option value="">Select Service Item</option>
+                                                        <t t-foreach="product_ids" t-as="product_id">
+                                                            <t t-if="product_id.id">
+                                                                <option t-att-value="product_id.id">
+                                                                    <t t-out="product_id.name"/>
+                                                                </option>
+                                                            </t>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Quantity</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="number" class="form-control " id="quantity"
+                                                           name="quantity"
+                                                           placeholder="1"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Discount</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="number" class="form-control "
+                                                           id="discount"
+                                                           name="discount" placeholder="10.0%"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Unit Price</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="number" class="form-control "
+                                                           id="unit_price"
+                                                           name="unit_price"
+                                                           placeholder="100.00"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-4">Save</button>
+                            </div>
+                        </div>
+                    </form>
+
+
+                    <div class="container py-4" data-anchor="true">
+                        <h3>History</h3>
+                        <t t-call="portal.message_thread">
+                            <t t-set="object" t-value="crm_id"/>
+                        </t>
+                    </div>
+                </section>
+
+            </t>
+        </xpath>
+
+    </template>
+
+    <template id="crm_quotation_form_view" inherit_id="portal.portal_sidebar">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-if="page_name == 'my_quotation_form'">
+                <section>
+                    <!--                    <div class="mb-2">-->
+                    <!--                        <a t-if="crm_id.id" t-attf-href="/edit/crm/#{crm_id.id}" type="button" class="btn btn-primary">-->
+                    <!--                            Edit-->
+                    <!--                        </a>-->
+                    <!--                        <a t-if="crm_id.id" t-attf-href="/my/crm/#{crm_id.id}/new/quotation" type="button"-->
+                    <!--                           class="btn btn-primary">-->
+                    <!--                            New Quotation-->
+                    <!--                        </a>-->
+                    <!--                    </div>-->
+                    <div class="container">
+                        <div class="col">
+                            <div t-if="order_id.id">
+                                <h2>
+                                    <t t-out="order_id.name"/>
+                                </h2>
+                            </div>
+
+                            <div class="row-9 pt-3 d-flex justify-content-between">
+                                <div class="col-6"
+                                     style="border: 1px solid #95a5a6; padding: 30px 20px; border-radius: 10px;">
+                                    <p style="
+                                    font-weight: bold;
+                                    margin-top:-45px;
+                                    background-color:#ffffff;
+                                    width:190px;
+                                    padding-left: 10px;
+                                    ">
+                                        Customer Information
+                                    </p>
+                                    <div class="row">
+                                        <div class="col">
+                                            <strong>Customer</strong>
+                                        </div>
+                                        <div class="col">
+                                            <p class="p-0 m-0" t-if="order_id.partner_id.id"
+                                               t-out="order_id.partner_id.name"/>
+                                            <p class="p-0 m-0" t-if="crm_id.street" t-out="crm_id.street"/>
+                                            <p class="p-0 m-0" t-if="crm_id.street2" t-out="crm_id.street2"/>
+                                            <p class="p-0 m-0">
+                                                <t t-if="crm_id.city" t-out="crm_id.city"/>
+                                                <t t-if="crm_id.state_id" t-out="crm_id.state_id.name"/>
+                                                <t t-if="crm_id.zip" t-out="crm_id.zip"/>
+                                            </p>
+                                            <p class="p-0 m-0" t-if="crm_id.country_id"
+                                               t-out="crm_id.country_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Expiration</strong>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <p class="p-0 m-0" t-if="order_id.validity_date"
+                                                   t-out="order_id.validity_date"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Quotation Date</strong>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <p class="p-0 m-0" t-if="order_id.date_order"
+                                                   t-out="order_id.date_order"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <strong>Payment Terms</strong>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <p class="p-0 m-0" t-if="order_id.payment_term_id.id"
+                                                   t-out="order_id.payment_term_id.name"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6"
+                                     style="border: 1px solid #95a5a6; padding: 30px 20px; border-radius: 10px;">
+                                    <p style="
+                                    font-weight: bold;
+                                    margin-top:-45px;
+                                    background-color:#ffffff;
+                                    width:190px;
+                                    padding-left: 15px;
+                                    ">
+                                        Product Information
+                                    </p>
+                                    <t t-foreach="order_id.order_line" t-as="line">
+                                        <div class="row">
+                                            <div class="col">
+                                                <strong>Service</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <p class="p-0 m-0" t-if="line.product_id.id"
+                                                       t-out="line.product_id.name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Quantity</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                     <p class="p-0 m-0" t-if="line.product_uom_qty"
+                                                       t-out="line.product_uom_qty"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Discount</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <p class="p-0 m-0" t-if="line.discount"
+                                                       t-out="line.discount"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Unit Price</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <p class="p-0 m-0" t-if="line.price_unit"
+                                                       t-out="line.price_unit"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <strong>Amount</strong>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <p class="p-0 m-0" t-if="line.price_subtotal"
+                                                       t-out="line.price_subtotal"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </t>
+        </xpath>
+
+    </template>
+
 </odoo>
