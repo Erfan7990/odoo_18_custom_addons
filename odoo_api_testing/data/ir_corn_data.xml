@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="ir_cron_fetch_external_api_data" model="ir.cron">
+            <field name="name">Fetch External API Data</field>
+            <field name="model_id" ref="model_product_template"/>
+            <field name="state">code</field>
+            <field name="code">model.fetch_product_info_from_api()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+<!--            <field name="numbercall">-1</field>-->
+            <field name="active" eval="True"/>
+        </record>
+
+<!--        &lt;!&ndash; Cron Job to Fetch Data from API every hour &ndash;&gt;-->
+<!--        <record id="ir_cron_fetch_external_api_data" model="ir.cron">-->
+<!--            <field name="name">Fetch External API Data</field>-->
+<!--            <field name="model_id" ref="model_product_template"/>-->
+<!--            <field name="state">code</field>-->
+<!--            <field name="code">model.fetch_product_info_from_api()</field>-->
+<!--            <field name="interval_number">1</field>-->
+<!--            <field name="interval_type">hours</field>-->
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field name="active">True</field>-->
+<!--        </record>-->
+    </data>
+</odoo>
